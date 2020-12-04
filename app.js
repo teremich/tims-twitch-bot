@@ -1,4 +1,12 @@
 const tmi = require('tmi.js');
+const express = require("express");
+const app = express();
+port = process.env.PORT || 3000;
+app.listen(port, () => {
+	console.log(`listening at ${port}`);
+});
+app.use(express.static("public"));
+app.use(express.json({limit:"1mb"}));
 
 // Define configuration options
 const opts = {
@@ -29,12 +37,24 @@ function onMessageHandler (target, context, msg, self) {
   const commandName = msg.trim();
 
   // If the command is known, let's execute it
-  if (commandName === '!dice') {
-    const num = rollDice();
-    client.say(target, `You rolled a ${num}`);
-    console.log(`* Executed ${commandName} command`);
-  } else {
-    console.log(`* Unknown command ${commandName}`);
+  // client.say(target, answer);
+  switch(commandName) {
+    // case "":
+    // break
+    // case "":
+    // break
+    // case "":
+    // break
+    // case "":
+    // break
+    // case "":
+    // break
+    // case "":
+    // break
+    // case "":
+    // break
+    default:
+        break;
   }
 }
 
