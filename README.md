@@ -9,11 +9,12 @@ TODO:
 -   notiz
 -   song
 -   trusted
--   timed commands
--   commands webseite
+-   X timed commands
+-   (macht Tim) commands webseite
 -   timeout:
--   link, spam, symbol/emoji spam, word-filter
--   löschen als verwarnung
+    -   strikes
+-   link, symbol/emoji spam, word-filter
+    -   löschen als verwarnung
     -   10s timeout
     -   300s timeout
     -   3600s timeout
