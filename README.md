@@ -8,7 +8,6 @@ TODO:
 -   song
 -   (macht Tim) commands webseite
 -   strikes
--   trusted
 -   link, symbol/emoji spam
     -   löschen als verwarnung
     -   10s timeout

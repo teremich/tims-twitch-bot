@@ -78,14 +78,16 @@ function strike(streamer, user, reason) {
     client.timeout(streamer,user, 5, reason);
 }
 
-function count(item, list) {
-    let c = 0;
-    for (let i of list) {
-        if (i == item) {
-            c++;
+function trust(user) {
+    fs.readFile("trusted.txt", (err, buf) => {
+        if (err) {
+            console.warn("could not read trusted.txt");
+            return;
         }
-    }
-    return c;
+        let data = buf.toString().trim();
+        data = data.replace("\n", ", ")
+        return find(user, data);
+    });
 }
 
 function find(substr, longstr) {
@@ -106,7 +108,7 @@ function onMessageHandler (streamer, context, msg, self) {
     let user = context.username;
     console.log(streamer, user, context, msg);
     // word listener
-    if (find("nightbot", msg)) {
+    if (find("nightbot", msg.toLowerCase())) {
         client.say(streamer, "Nightbot ist tot! Ich hab ihn umgebracht! >:)");
     }
     // quick messages spam protection
@@ -130,8 +132,12 @@ function onMessageHandler (streamer, context, msg, self) {
             strike(streamer, user, "kannst du das auch ohne '"+badLine+"' sagen?");
         }
     }
-
-    
+    // link protection
+    for (let i = 1; i < msg.length-2; i++) {
+        if (msg[i] == "." && msg[i-1] != " " && msg[i+1] != " ") {
+            strike(streamer, user, "Bitte sende sowas nicht, man koennte sonst denken es sei ein link");
+        }
+    }
     let args = msg.trim().split(" ");
     let commandName = args.shift();
     // client.say(streamer, answer);
@@ -140,6 +146,9 @@ function onMessageHandler (streamer, context, msg, self) {
             strike(streamer, user, "du wolltest es so");
             break
         case "!filter":
+            if (!context.mod) {
+                break;
+            }
             if (args[0] == "add") {
                 fs.readFile("filter.txt", (err, buf) => {
                     if (err) {
@@ -149,9 +158,14 @@ function onMessageHandler (streamer, context, msg, self) {
                     let data = buf.toString().trim();
                     args.shift();
                     let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
-                    fs.writeFile("filter.txt", newFilterFile);
+                    fs.writeFile("filter.txt", newFilterFile, (err) => {
+                        if (err) {
+                            console.warn(err);
+                            return;
+                        }
+                        client.say(streamer, "added "+args.join(" ")+ " to the filter list");
+                    });
                 });
-                client.say(streamer, "added "+args.join(" ")+ "to the filter list");
             } else if (args[0] == "remove") {
                 fs.readFile("filter.txt", (err, buf) => {
                     if (err) {
@@ -171,9 +185,14 @@ function onMessageHandler (streamer, context, msg, self) {
                         }
                     }
                     
-                    fs.writeFile("filter.txt", newFilterFile);
+                    fs.writeFile("filter.txt", newFilterFile, (err) => {
+                        if (err) {
+                            console.warn(err);
+                            return;
+                        }
+                        client.say(streamer, "removed "+args.join(" ")+" from the filter list")
+                    });
                 });
-                client.say(streamer, "removed "+args.join(" ")+" from the filter list")
             } else {
                 client.say(streamer, "error! syntax: !filter <add|remove> <word or phrase>")
             }
@@ -188,9 +207,14 @@ function onMessageHandler (streamer, context, msg, self) {
                     let data = buf.toString().trim();
                     args.shift();
                     let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
-                    fs.writeFile("trusted.txt", newFilterFile);
+                    fs.writeFile("trusted.txt", newFilterFile, (err) => {
+                        if (err) {
+                            console.warn(err);
+                            return;
+                        }
+                        client.say(streamer, "added "+args.join(" ")+ " to the trusted users list");
+                    });
                 });
-                client.say(streamer, "added "+args.join(" ")+ "to the trusted users list");
             } else if (args[0] == "remove") {
                 fs.readFile("trusted.txt", (err, buf) => {
                     if (err) {
@@ -210,9 +234,14 @@ function onMessageHandler (streamer, context, msg, self) {
                         }
                     }
                     
-                    fs.writeFile("trusted.txt", newFilterFile);
+                    fs.writeFile("trusted.txt", newFilterFile, (err) => {
+                        if (err) {
+                            console.warn(err);
+                            return;
+                        }
+                        client.say(streamer, "removed "+args.join(" ")+" from the trusted users list");
+                    });
                 });
-                client.say(streamer, "removed "+args.join(" ")+" from the trusted users list")
             } else if (args[0] == "show" || true) {
                 fs.readFile("trusted.txt", (err, buf) => {
                     if (err) {
@@ -235,9 +264,14 @@ function onMessageHandler (streamer, context, msg, self) {
                     let data = buf.toString().trim();
                     args.shift();
                     let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
-                    fs.writeFile("notiz.txt", newFilterFile);
+                    fs.writeFile("notiz.txt", newFilterFile, (err) => {
+                        if (!err) {
+                            client.say(streamer, "added "+args.join(" ")+ " to the notiz list");
+                        } else {
+                            console.warn(err);
+                        }
+                    });
                 });
-                client.say(streamer, "added "+args.join(" ")+ "to the notiz list");
             } else if (args[0] == "remove") {
                 fs.readFile("notiz.txt", (err, buf) => {
                     if (err) {
@@ -257,9 +291,14 @@ function onMessageHandler (streamer, context, msg, self) {
                         }
                     }
                     
-                    fs.writeFile("notiz.txt", newFilterFile);
+                    fs.writeFile("notiz.txt", newFilterFile, (err) => {
+                        if (err) {
+                            console.warn(err);
+                            return;
+                        }
+                        client.say(streamer, "removed "+args.join(" ")+" from the notiz list")
+                    });
                 });
-                client.say(streamer, "removed "+args.join(" ")+" from the notiz list")
             } else if (args[0] == "show" || true) {
                 fs.readFile("notiz.txt", (err, buf) => {
                     if (err) {
@@ -283,34 +322,34 @@ function onMessageHandler (streamer, context, msg, self) {
         // case "":
             // break;
         default:
-            let counter;
+            if (commandName[0] != "!") {
+                break;
+            }
             fs.readFile("counter.json", (err, buf) => {
                 if (err) {
                     console.warn("could not read counter.json");
                 }
                 let data = buf.toString();
-                counter = JSON.parse(data);
-            });
-            if (args === []) {
-                try{
-                    client.say(streamer, ++counter[commandName]);
-                } catch (e) {
-                    if (context.mod) {
+                let counter = JSON.parse(data);
+                if (args.length < 1) {
+                    if (counter[commandName]) {
+                        let c = ++counter[commandName];
+                        client.say(streamer, String(c));
+                    } else if (context.mod) {
                         counter[commandName] = 1;
                         client.say(streamer, "made a new counter");
                     }
+                    fs.writeFile("counter.json", JSON.stringify(counter, null, 4), function(err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                } else if ((args[0] == "get" || true) && counter) {
+                    client.say(streamer, String(counter[commandName]));
+                } else {
+                    client.say(streamer, "error! counter.json konnten nicht gelesen werden");
                 }
-                fs.writeFile("counter.json", JSON.stringify(counter, null, 4), function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            } else if (args[0] == "get") {
-                client.say(streamer, counter[commandName]);
-            } else {
-                client.say(streamer, "error! syntax: !counterName [get]")
-            }
-            break;
+            });
   }
 }
 
