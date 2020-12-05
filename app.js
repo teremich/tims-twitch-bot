@@ -60,7 +60,8 @@ for (let streamer of opts["channels"]) {
         oldMessages: {},
         bannedWords: [],
         timedMessages: [],
-        msgBetween: 6
+        strikes: {},
+        msgBetween: 0
     };
 }
 streamerVars["#c183649"]["bannedWords"].push("fortnite");
@@ -75,7 +76,40 @@ fs.readFile("filter.txt", (err, buf) => {
 });
 
 function strike(streamer, user, reason) {
-    client.timeout(streamer,user, 5, reason);
+    let now = new Date();
+    if (!streamerVars[streamer]["strikes"][user]) {
+        streamerVars[streamer]["strikes"][user] = [now.getTime()];
+    } else {
+        for (let i = streamerVars[streamer]["strikes"][user].length - 1; i >= 0; i--) {
+            let d = streamerVars[streamer]["strikes"][user][i];
+            if (d < now.getTime() - 1000*60*30) {
+                streamerVars[streamer]["strikes"][user].splice(i, 1);
+            }
+        }
+
+    }
+    switch(streamerVars[streamer]["strikes"][user].length) {
+        case 1:
+            client.timeout(streamer,user, 5, reason);
+            break;
+        case 2:
+            client.timeout(streamer,user, 10, reason);
+            break;
+        case 3:
+            client.timeout(streamer,user, 60, reason);
+            break;
+        case 4:
+            client.timeout(streamer,user, 300, reason);
+            break;
+        case 5:
+            client.timeout(streamer,user, 600, reason);
+            break;
+        case 6:
+            client.timeout(streamer,user, 3600, reason);
+            break;
+        default:
+            console.log("something went wrong with a strike", streamer, user, streamerVars[streamer]["strikes"]);
+    }
 }
 
 function trust(user) {

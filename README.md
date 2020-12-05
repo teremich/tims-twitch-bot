@@ -7,9 +7,5 @@ TODO:
 
 -   song
 -   (macht Tim) commands webseite
--   strikes
--   link, symbol/emoji spam
-    -   löschen als verwarnung
-    -   10s timeout
-    -   300s timeout
-    -   3600s timeout
+-   symbol/emoji spam (wie? was zählt als spam?)
+-   löschen als verwarnung
