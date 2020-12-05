@@ -289,17 +289,24 @@ function onMessageHandler (streamer, context, msg, self) {
                 let data = buf.toString();
                 counter = JSON.parse(data);
             });
-            if (count(commandName, counter) > 0) {
+            if (args === []) {
                 try{
-                    counter[commandName]++;
+                    client.say(streamer, ++counter[commandName]);
                 } catch (e) {
-                    counter[commandName] = 1;
+                    if (context.mod) {
+                        counter[commandName] = 1;
+                        client.say(streamer, "made a new counter");
+                    }
                 }
                 fs.writeFile("counter.json", JSON.stringify(counter, null, 4), function(err) {
                     if (err) {
                         console.log(err);
                     }
                 });
+            } else if (args[0] == "get") {
+                client.say(streamer, counter[commandName]);
+            } else {
+                client.say(streamer, "error! syntax: !counterName [get]")
             }
             break;
   }
