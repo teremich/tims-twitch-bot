@@ -5,7 +5,6 @@ for infos contact der.waschbaerbot@gmail.com
 
 TODO:
 
--   counter (!teamkill)
 -   song
 -   (macht Tim) commands webseite
 -   strikes

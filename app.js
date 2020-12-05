@@ -275,7 +275,9 @@ function onMessageHandler (streamer, context, msg, self) {
         case "!commands":
             // TODO GET CONTEXT
             if (context.mod) {
-                client.say(streamer, );
+                client.say(streamer, "https://cut-hail-cloud.glitch.me/modcommands.html");
+            } else {
+                client.say(streamer, "https://cut-hail-cloud.glitch.me/commands.html");
             }
             break;
         // case "":
