@@ -273,20 +273,23 @@ function onMessageHandler (streamer, context, msg, self) {
             }
             break;
         case "!commands":
-            if context.
+            // TODO GET CONTEXT
+            if (context.mod) {
+                client.say(streamer, );
+            }
             break;
         // case "":
             // break;
         default:
+            let counter;
+            fs.readFile("counter.json", (err, buf) => {
+                if (err) {
+                    console.warn("could not read counter.json");
+                }
+                let data = buf.toString();
+                counter = JSON.parse(data);
+            });
             if (count(commandName, counter) > 0) {
-                let counter;
-                fs.readFile("counter.json", (err, buf) => {
-                    if (err) {
-                        console.warn("could not read counter.json");
-                    }
-                    let data = buf.toString();
-                    counter = JSON.parse(data);
-                });
                 try{
                     counter[commandName]++;
                 } catch (e) {
