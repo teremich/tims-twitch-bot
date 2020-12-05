@@ -1,0 +1,22 @@
+{
+  "name": "tims-twitch-bot",
+  "version": "0.1.1",
+  "description": "a twitch chat moderation bot made for tim (twitch.tv/datmatheeinhorn)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teremich/tims-twitch-bot.git"
+  },
+  "author": "Michael Tereschenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/teremich/tims-twitch-bot/issues"
+  },
+  "homepage": "https://github.com/teremich/tims-twitch-bot#readme",
+  "dependencies": {
+    "tmi.js": "^1.5.0"
+  }
+}
