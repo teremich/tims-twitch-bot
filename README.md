@@ -5,11 +5,9 @@ for infos contact der.waschbaerbot@gmail.com
 
 TODO:
 
--   counter (!teamkill)
 -   song
 -   (macht Tim) commands webseite
 -   strikes
--   trusted
 -   link, symbol/emoji spam
     -   löschen als verwarnung
     -   10s timeout
