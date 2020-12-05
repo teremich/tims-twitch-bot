@@ -11,9 +11,8 @@ TODO:
 -   trusted
 -   X timed commands
 -   (macht Tim) commands webseite
--   timeout:
-    -   strikes
--   link, symbol/emoji spam, word-filter
+-   strikes
+-   link, symbol/emoji spam
     -   löschen als verwarnung
     -   10s timeout
     -   300s timeout

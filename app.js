@@ -17,8 +17,8 @@ const opts = {
         password: process.env.password || "oauth:6q5g0j0cyqzl04f77okfrt1tp1ifoh"
     },
     channels: [
-        "datmatheeinhorn",
-        "c183649"
+        "#datmatheeinhorn",
+        "#c183649"
     ]
 };
 
@@ -32,11 +32,46 @@ client.on('connected', onConnectedHandler);
 // Connect to Twitch:
 client.connect();
 
+let streamerVars = {
+    // "#datmatheinhorn": {
+    //     "oldMessages": {},
+    //     "bannedWords": [],
+    //     "timedMessages": [],
+    //     "msgBetween": 6
+    // },
+    // "#c183649": {
+    //     "oldMessages": {},
+    //     "bannedWords": ["fortnite"],
+    //     "timedMessages": [],
+    //     "msgBetween": 6
+    // }
+};
+
 function timedMessage(streamer) {
-    client.say(streamer, "Ich sage das alle 5 Minuten");
+    if (streamerVars[streamer]["msgBetween"] > 5) {
+        client.say(streamer, "Ich sage das alle 5 Minuten");
+    }
 }
 
-let oldMessages = {};
+
+for (let streamer of opts["channels"]) {
+    streamerVars[streamer] = {
+        oldMessages: {},
+        bannedWords: [],
+        timedMessages: [],
+        msgBetween: 6
+    };
+}
+streamerVars["#c183649"]["bannedWords"].push("fortnite");
+streamerVars["#c183649"]["timedMessages"].push("Ich sage das alle 5 Minuten");
+fs.readFile("filter.txt", (err, buf) => {
+    if (err) {console.warn("could not read filter.txt"); return;}
+    let data = buf.toString().trim();
+    let lines = data.split("\n");
+    for (let line of lines) {
+        streamerVars["#datmatheeinhorn"].bannedWords.push(line.toLowerCase());
+    }
+});
 
 function strike(streamer, user, reason) {
     client.timeout(streamer,user, 5, reason);
@@ -61,51 +96,102 @@ function find(substr, longstr) {
     return false;
 }
 
+
 // Called every time a message comes in
 function onMessageHandler (streamer, context, msg, self) {
-    if (self) { return; } // Ignore messages from the bot
+    let time = new Date();
+    if (self) { streamerVars[streamer].msgBetween = 0; return; } // Ignore messages from the bot
+    streamerVars[streamer].msgBetween++;
     let user = context.username;
     console.log(streamer, user, context, msg);
+    // word listener
     if (find("nightbot", msg)) {
         client.say(streamer, "Nightbot ist tot! Ich hab ihn umgebracht! >:)");
     }
-    // Remove whitespace from chat message
-    const commandName = msg.trim();
-    if (!oldMessages[user]) {
-        oldMessages[user] = [msg];
+    // quick messages spam protection
+    if (!streamerVars[streamer].oldMessages[user]) {
+        streamerVars[streamer].oldMessages[user] = [time.getTime()];
     } else {
-        oldMessages[user].push(msg);
+        streamerVars[streamer].oldMessages[user].push(time.getTime());
     }
-    if (count(msg, oldMessages[user]) > 3) {
-        strike(streamer, name, "bitte hoer auf diese nachricht zu senden");
+    for (let i = streamerVars[streamer].oldMessages[user].length -1; i >= 0; i--) {
+        let t = streamerVars[streamer].oldMessages[user][i];
+        if (t < time.getTime()-(1000*30)) {
+            streamerVars[streamer].oldMessages[user].splice(i, 1);
+        }
+    }
+    if (streamerVars[streamer].oldMessages[user].length > 5) {
+        strike(streamer, user, "zu viele nachrichten zu schnell");
+    }
+    // word filter protection
+    for (let badLine of streamerVars[streamer].bannedWords) {
+        if (find(badLine, msg.toLowerCase())) {
+            strike(streamer, user, "kannst du das auch ohne '"+badLine+"' sagen?");
+        }
     }
 
-  // simple commands (no arguments)
-  // client.say(streamer, answer);
-  switch(commandName) {
-    case "!hallo":
-        client.say(streamer, user+", hallo!");
-        break
-    case "!timemeout":
-        strike(streamer, user, "du wolltest es so");
-        break
-    // case "":
-    // break
-    // case "":
-    // break
-    // case "":
-    // break
-    // case "":
-    // break
-    // case "":
-    // break
-    default:
-        break;
+    
+    let args = msg.trim().split(" ");
+    let commandName = args.shift();
+    // client.say(streamer, answer);
+    switch(commandName) {
+        case "!timemeout":
+            strike(streamer, user, "du wolltest es so");
+            break
+        case "!filter":
+            if (args[0] == "add") {
+                fs.readFile("filter.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read filter.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    let newFilterFile = data+"\n"+args.join(" ");
+                    fs.writeFile("filter.txt", newFilterFile);
+                });
+            } else if (args[0] == "remove") {
+                fs.readFile("filter.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read filter.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    let lines = data.split("\n");
+                    let newFilterFile = "";
+                    for (let line of lines) {
+                        if (line == args.join(" ").toLowerCase()) {
+                            continue;
+                        }
+                        else {
+                            newFilterFile += line + "\n";
+                        }
+                    }
+                    
+                    fs.writeFile("filter.txt", newFilterFile);
+                });
+            }
+            break;
+        // case "":
+            // break;
+        // case "":
+            // break;
+        // case "":
+            // break;
+        // case "":
+            // break;
+        default:
+            break;
   }
 }
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
     console.log(`* Connected to ${addr}:${port}`);
-    setInterval(timedMessage, 5*60*1000);
+    for (let streamer of opts["channels"]) {
+        for (let msg of streamerVars[streamer]["timedMessages"]) {
+            setInterval(() => {timedMessage(streamer, msg)}, 5000);
+        }
+    }
 }
