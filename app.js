@@ -225,13 +225,79 @@ function onMessageHandler (streamer, context, msg, self) {
                 });
             }
             break;
-        // case "":
-            // break;
-        // case "":
-            // break;
+        case "!notiz":
+            if (args[0] == "add") {
+                fs.readFile("notiz.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read notiz.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
+                    fs.writeFile("notiz.txt", newFilterFile);
+                });
+                client.say(streamer, "added "+args.join(" ")+ "to the notiz list");
+            } else if (args[0] == "remove") {
+                fs.readFile("notiz.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read notiz.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    let lines = data.split("\n");
+                    let newFilterFile = "";
+                    for (let line of lines) {
+                        if (line == args.join(" ").toLowerCase()) {
+                            continue;
+                        }
+                        else {
+                            newFilterFile += line + "\n";
+                        }
+                    }
+                    
+                    fs.writeFile("notiz.txt", newFilterFile);
+                });
+                client.say(streamer, "removed "+args.join(" ")+" from the notiz list")
+            } else if (args[0] == "show" || true) {
+                fs.readFile("notiz.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read notiz.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    data = data.replace("\n", ", ")
+                    client.say(streamer, data);
+                });
+            }
+            break;
+        case "!commands":
+            if context.
+            break;
         // case "":
             // break;
         default:
+            if (count(commandName, counter) > 0) {
+                let counter;
+                fs.readFile("counter.json", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read counter.json");
+                    }
+                    let data = buf.toString();
+                    counter = JSON.parse(data);
+                });
+                try{
+                    counter[commandName]++;
+                } catch (e) {
+                    counter[commandName] = 1;
+                }
+                fs.writeFile("counter.json", JSON.stringify(counter, null, 4), function(err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+            }
             break;
   }
 }

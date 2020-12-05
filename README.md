@@ -6,9 +6,7 @@ for infos contact der.waschbaerbot@gmail.com
 TODO:
 
 -   counter (!teamkill)
--   notiz
 -   song
--   trusted
 -   (macht Tim) commands webseite
 -   strikes
 -   link, symbol/emoji spam
