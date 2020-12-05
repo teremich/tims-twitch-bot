@@ -106,7 +106,7 @@ function onMessageHandler (streamer, context, msg, self) {
     if (self) { return; } // Ignore messages from the bot
     streamerVars[streamer].msgBetween++;
     let user = context.username;
-    console.log(streamer, user, context, msg);
+    // console.log(streamer, user, context, msg);
     // word listener
     if (find("nightbot", msg.toLowerCase())) {
         client.say(streamer, "Nightbot ist tot! Ich hab ihn umgebracht! >:)");
@@ -125,6 +125,7 @@ function onMessageHandler (streamer, context, msg, self) {
     }
     if (streamerVars[streamer].oldMessages[user].length > 5) {
         strike(streamer, user, "zu viele nachrichten zu schnell");
+        return;
     }
     // word filter protection
     for (let badLine of streamerVars[streamer].bannedWords) {
@@ -341,7 +342,7 @@ function onMessageHandler (streamer, context, msg, self) {
                     }
                     fs.writeFile("counter.json", JSON.stringify(counter, null, 4), function(err) {
                         if (err) {
-                            console.log(err);
+                            console.warn(err);
                         }
                     });
                 } else if ((args[0] == "get" || true) && counter) {
