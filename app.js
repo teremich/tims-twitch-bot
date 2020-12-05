@@ -14,7 +14,7 @@ app.use(express.json({limit:"1mb"}));
 const opts = {
     identity: {
         username: "der_waschbaerbot",
-        password: process.env.password || "oauth:6q5g0j0cyqzl04f77okfrt1tp1ifoh"
+        password: process.env.password
     },
     channels: [
         "#datmatheeinhorn",
