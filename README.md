@@ -9,7 +9,6 @@ TODO:
 -   notiz
 -   song
 -   trusted
--   X timed commands
 -   (macht Tim) commands webseite
 -   strikes
 -   link, symbol/emoji spam

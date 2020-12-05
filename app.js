@@ -49,6 +49,7 @@ let streamerVars = {
 
 function timedMessage(streamer) {
     if (streamerVars[streamer]["msgBetween"] > 5) {
+        streamerVars[streamer]["msgBetween"] = 0;
         client.say(streamer, "Ich sage das alle 5 Minuten");
     }
 }
@@ -100,7 +101,7 @@ function find(substr, longstr) {
 // Called every time a message comes in
 function onMessageHandler (streamer, context, msg, self) {
     let time = new Date();
-    if (self) { streamerVars[streamer].msgBetween = 0; return; } // Ignore messages from the bot
+    if (self) { return; } // Ignore messages from the bot
     streamerVars[streamer].msgBetween++;
     let user = context.username;
     console.log(streamer, user, context, msg);
@@ -147,9 +148,10 @@ function onMessageHandler (streamer, context, msg, self) {
                     }
                     let data = buf.toString().trim();
                     args.shift();
-                    let newFilterFile = data+"\n"+args.join(" ");
+                    let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
                     fs.writeFile("filter.txt", newFilterFile);
                 });
+                client.say(streamer, "added "+args.join(" ")+ "to the filter list");
             } else if (args[0] == "remove") {
                 fs.readFile("filter.txt", (err, buf) => {
                     if (err) {
@@ -171,10 +173,58 @@ function onMessageHandler (streamer, context, msg, self) {
                     
                     fs.writeFile("filter.txt", newFilterFile);
                 });
+                client.say(streamer, "removed "+args.join(" ")+" from the filter list")
+            } else {
+                client.say(streamer, "error! syntax: !filter <add|remove> <word or phrase>")
             }
             break;
-        // case "":
-            // break;
+        case "!trusted":
+            if (args[0] == "add") {
+                fs.readFile("trusted.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read trusted.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
+                    fs.writeFile("trusted.txt", newFilterFile);
+                });
+                client.say(streamer, "added "+args.join(" ")+ "to the trusted users list");
+            } else if (args[0] == "remove") {
+                fs.readFile("trusted.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read trusted.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    let lines = data.split("\n");
+                    let newFilterFile = "";
+                    for (let line of lines) {
+                        if (line == args.join(" ").toLowerCase()) {
+                            continue;
+                        }
+                        else {
+                            newFilterFile += line + "\n";
+                        }
+                    }
+                    
+                    fs.writeFile("trusted.txt", newFilterFile);
+                });
+                client.say(streamer, "removed "+args.join(" ")+" from the trusted users list")
+            } else if (args[0] == "show" || true) {
+                fs.readFile("trusted.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read trusted.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    data = data.replace("\n", ", ")
+                    client.say(streamer, data);
+                });
+            }
+            break;
         // case "":
             // break;
         // case "":
