@@ -17,8 +17,7 @@ const opts = {
         password: process.env.password
     },
     channels: [
-        "#datmatheeinhorn",
-        "#c183649"
+        "#datmatheeinhorn"
     ]
 };
 
@@ -64,8 +63,6 @@ for (let streamer of opts["channels"]) {
         msgBetween: 0
     };
 }
-streamerVars["#c183649"]["bannedWords"].push("fortnite");
-streamerVars["#c183649"]["timedMessages"].push("Ich sage das alle 5 Minuten");
 fs.readFile("filter.txt", (err, buf) => {
     if (err) {console.warn("could not read filter.txt"); return;}
     let data = buf.toString().trim();
@@ -153,7 +150,7 @@ function onMessageHandler (streamer, context, msg, self) {
     }
     for (let i = streamerVars[streamer].oldMessages[user].length -1; i >= 0; i--) {
         let t = streamerVars[streamer].oldMessages[user][i];
-        if (t < time.getTime()-(1000*30)) {
+        if (t < time.getTime()-(1000*20)) {
             streamerVars[streamer].oldMessages[user].splice(i, 1);
         }
     }
@@ -353,6 +350,17 @@ function onMessageHandler (streamer, context, msg, self) {
             } else {
                 client.say(streamer, "https://cut-hail-cloud.glitch.me/commands.html");
             }
+            break;
+        case "!song":
+            fs.readFile("snip.txt", (err, buf) => {
+                if (err) {
+                    console.warn(err);
+                    client.say(streamer, "etwas ist schiefgelaufen, check die konsole");
+                    return;
+                }
+                let data = buf.toString();
+                client.say(streamer, data);
+            });
             break;
         // case "":
             // break;

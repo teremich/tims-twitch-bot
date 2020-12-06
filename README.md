@@ -5,7 +5,6 @@ for infos contact der.waschbaerbot@gmail.com
 
 TODO:
 
--   song
--   (macht Tim) commands webseite
--   symbol/emoji spam (wie? was zählt als spam?)
--   löschen als verwarnung
+-   titel und game aendern
+-   (macht Tim) commands webseiten
+-   kompilieren
