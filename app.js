@@ -14,7 +14,7 @@ app.use(express.json({limit:"1mb"}));
 const opts = {
     identity: {
         username: "der_waschbaerbot",
-        password: process.env.password
+        password: "oauth:8qh91u3m44cjj0ilxauey9pu5bn2ba"
     },
     channels: [
         "#datmatheeinhorn"
@@ -109,16 +109,17 @@ function strike(streamer, user, reason) {
     }
 }
 
-function trust(user) {
-    fs.readFile("trusted.txt", (err, buf) => {
+async function trust(user) {
+    let data;
+    await fs.readFile("trusted.txt", (err, buf) => {
         if (err) {
             console.warn("could not read trusted.txt");
             return;
         }
-        let data = buf.toString().trim();
+        data = buf.toString().trim();
         data = data.replace("\n", ", ")
-        return find(user, data);
     });
+    return find(user, data);
 }
 
 function find(substr, longstr) {
@@ -132,7 +133,7 @@ function find(substr, longstr) {
 
 
 // Called every time a message comes in
-function onMessageHandler (streamer, context, msg, self) {
+async function onMessageHandler (streamer, context, msg, self) {
     let time = new Date();
     if (self) { return; } // Ignore messages from the bot
     streamerVars[streamer].msgBetween++;
@@ -173,6 +174,24 @@ function onMessageHandler (streamer, context, msg, self) {
     let args = msg.trim().split(" ");
     let commandName = args.shift();
     // client.say(streamer, answer);
+    let counter;
+    await fs.readFile("simplecommands.txt", (err, buf) => {
+        if (err) {
+            console.warn("could not read simplecommands.txt");
+            return;
+        }
+        let data = buf.toString().trim();
+        data = data.split("\n");
+        for (let line of data) {
+            let parsed = line.split(":");
+            let cmdName = parsed.shift();
+            if (commandName == cmdName) {
+                client.say(streamer, parsed.join(":"));
+                counter = false;
+            }
+        }
+        counter = true;
+    });
     switch(commandName) {
         case "!timemeout":
             strike(streamer, user, "du wolltest es so");
@@ -195,7 +214,7 @@ function onMessageHandler (streamer, context, msg, self) {
                             console.warn(err);
                             return;
                         }
-                        client.say(streamer, "added "+args.join(" ")+ " to the filter list");
+                        client.say(streamer, "added '"+args.join(" ")+ "' to the filter list");
                     });
                 });
             } else if (args[0] == "remove") {
@@ -222,7 +241,7 @@ function onMessageHandler (streamer, context, msg, self) {
                             console.warn(err);
                             return;
                         }
-                        client.say(streamer, "removed "+args.join(" ")+" from the filter list")
+                        client.say(streamer, "removed '"+args.join(" ")+"' from the filter list")
                     });
                 });
             } else {
@@ -244,7 +263,7 @@ function onMessageHandler (streamer, context, msg, self) {
                             console.warn(err);
                             return;
                         }
-                        client.say(streamer, "added "+args.join(" ")+ " to the trusted users list");
+                        client.say(streamer, "added '"+args.join(" ")+ "' to the trusted users list");
                     });
                 });
             } else if (args[0] == "remove") {
@@ -271,7 +290,7 @@ function onMessageHandler (streamer, context, msg, self) {
                             console.warn(err);
                             return;
                         }
-                        client.say(streamer, "removed "+args.join(" ")+" from the trusted users list");
+                        client.say(streamer, "removed '"+args.join(" ")+"' from the trusted users list");
                     });
                 });
             } else if (args[0] == "show" || true) {
@@ -286,6 +305,7 @@ function onMessageHandler (streamer, context, msg, self) {
                 });
             }
             break;
+        case "!note":
         case "!notiz":
             if (args[0] == "add") {
                 fs.readFile("notiz.txt", (err, buf) => {
@@ -298,7 +318,7 @@ function onMessageHandler (streamer, context, msg, self) {
                     let newFilterFile = data+"\n"+args.join(" ").toLowerCase();
                     fs.writeFile("notiz.txt", newFilterFile, (err) => {
                         if (!err) {
-                            client.say(streamer, "added "+args.join(" ")+ " to the notiz list");
+                            client.say(streamer, "added '"+args.join(" ")+ "' to the notiz list");
                         } else {
                             console.warn(err);
                         }
@@ -328,7 +348,7 @@ function onMessageHandler (streamer, context, msg, self) {
                             console.warn(err);
                             return;
                         }
-                        client.say(streamer, "removed "+args.join(" ")+" from the notiz list")
+                        client.say(streamer, "removed '"+args.join(" ")+"' from the notiz list")
                     });
                 });
             } else if (args[0] == "show" || true) {
@@ -344,8 +364,53 @@ function onMessageHandler (streamer, context, msg, self) {
             }
             break;
         case "!commands":
-            // TODO GET CONTEXT
-            if (context.mod) {
+            if (args[0] == "add") {
+                fs.readFile("simplecommands.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read simplecommands.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    cmdName = args.shift();
+                    let newFilterFile = data+"\n"+cmdName+":"+args.join(" ").toLowerCase();
+                    fs.writeFile("simplecommands.txt", newFilterFile, (err) => {
+                        if (!err) {
+                            client.say(streamer, "added '"+cmdName+ "' to the simple commands list");
+                        } else {
+                            console.warn(err);
+                        }
+                    });
+                });
+            } else if (args[0] == "remove") {
+                fs.readFile("simplecommands.txt", (err, buf) => {
+                    if (err) {
+                        console.warn("could not read simplecommands.txt");
+                        return;
+                    }
+                    let data = buf.toString().trim();
+                    args.shift();
+                    cmdName = args.shift();
+                    let lines = data.split("\n");
+                    let newFilterFile = "";
+                    for (let line of lines) {
+                        if (line.split(":")[0] == cmdName) {
+                            continue;
+                        }
+                        else {
+                            newFilterFile += line + "\n";
+                        }
+                    }
+                    
+                    fs.writeFile("simplecommands.txt", newFilterFile, (err) => {
+                        if (err) {
+                            console.warn(err);
+                            return;
+                        }
+                        client.say(streamer, "removed '"+cmdName+"' from the simple command list")
+                    });
+                });
+            } else if (context.mod) {
                 client.say(streamer, "https://cut-hail-cloud.glitch.me/modcommands.html");
             } else {
                 client.say(streamer, "https://cut-hail-cloud.glitch.me/commands.html");
@@ -365,7 +430,7 @@ function onMessageHandler (streamer, context, msg, self) {
         // case "":
             // break;
         default:
-            if (commandName[0] != "!") {
+            if (commandName[0] != "!" || !counter) {
                 break;
             }
             fs.readFile("counter.json", (err, buf) => {
