@@ -364,7 +364,7 @@ async function onMessageHandler (streamer, context, msg, self) {
             }
             break;
         case "!commands":
-            if (args[0] == "add") {
+            if (args[0] == "add" && context.mod) {
                 fs.readFile("simplecommands.txt", (err, buf) => {
                     if (err) {
                         console.warn("could not read simplecommands.txt");
@@ -382,7 +382,7 @@ async function onMessageHandler (streamer, context, msg, self) {
                         }
                     });
                 });
-            } else if (args[0] == "remove") {
+            } else if (args[0] == "remove" && context.mod) {
                 fs.readFile("simplecommands.txt", (err, buf) => {
                     if (err) {
                         console.warn("could not read simplecommands.txt");
